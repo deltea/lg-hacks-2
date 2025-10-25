@@ -113,7 +113,7 @@
 
       <div class="flex flex-col items-center gap-2 border-4 border-neutral-800 px-4 pt-4 rounded-2xl">
         <h2 class="font-bold">PARTY</h2>
-        <div class="w-[24rem] h-[24rem] overflow-auto rounded-xl flex flex-col gap-2 px-4">
+        <div class="w-[24rem] h-[24rem] overflow-auto rounded-xl flex flex-col gap-2 px-4 pb-4">
           {#each players as player, i}
             <span class="rounded-xl w-full bg-neutral-900 min-h-16 flex px-4 items-center gap-2 hover:scale-105 duration-100 group">
               <div class="flex items-center gap-2">
@@ -124,7 +124,7 @@
               </div>
 
               <span class="ml-auto group-hover:opacity-100 opacity-0 duration-100">
-                <button class="flex justify-center items-center rounded-full size-8 bg-neutral-800 text-fg" aria-label="remove player">
+                <button class="flex justify-center items-center rounded-full size-8 bg-neutral-800 text-fg cursor-pointer" aria-label="remove player">
                   <iconify-icon icon="material-symbols:close-small-outline" class="text-2xl"></iconify-icon>
                 </button>
               </span>
@@ -160,7 +160,7 @@
           </AlertDialog.Portal>
         </AlertDialog.Root>
 
-        <button onclick={() => setGameState("prompt")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-6 py-4 cursor-pointer flex items-center gap-3">
+        <button onclick={() => setGameState("prompt")} class="border-2 border-fg font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3 hover:scale-105 active:scale-100 duration-100">
           <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
           <span>Start game</span>
         </button>
@@ -177,15 +177,17 @@
       </div>
 
       <form class="flex gap-2 h-12">
-        <input
-          bind:value={promptInput}
-          type="text"
-          placeholder="a sinister type beat"
-          class="w-[32rem] h-full mb-4 px-4 rounded-xl bg-neutral-800 focus:outline-none focus:border-accent"
-        />
-        <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center">
-          <span>✨</span>
-        </button>
+        <div class="bg-neutral-800 w-[32rem] rounded-xl pl-4 flex items-center">
+          <input
+            bind:value={promptInput}
+            type="text"
+            placeholder="a sinister type beat"
+            class="w-full h-full outline-none"
+          />
+
+          <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center text-xl">✨</button>
+        </div>
+
         <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
           <span>Done</span>
@@ -193,7 +195,7 @@
       </form>
     </div>
   {:else if gameState == "create"}
-    <div class="flex justify-between items-center w-full">
+    <div class="flex justify-between items-center w-full relative">
       <div class="flex items-center gap-4">
         <button onclick={togglePlay} aria-label="play/pause">
           <iconify-icon
