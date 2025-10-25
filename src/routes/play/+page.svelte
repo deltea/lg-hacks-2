@@ -188,7 +188,7 @@
         </button>
         <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
-          <span>done</span>
+          <span>Done</span>
         </button>
       </form>
     </div>
