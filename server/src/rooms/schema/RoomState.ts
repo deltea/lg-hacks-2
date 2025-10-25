@@ -10,7 +10,7 @@ export class Prompt extends Round {
 
 export class Song extends Round {
   @type("number") tempo: number;
-  // TODO: add song fields
+  @type({ array: { array: { array: "boolean" } } }) notes: boolean[][][];
 }
 
 export class Player extends Schema {
@@ -21,8 +21,10 @@ export class Player extends Schema {
 
 export class RoomState extends Schema {
   @type("string") state: "lobby" | "game" | "result" = "lobby";
-  @type("number") round: number = 0;
-  @type({ array: { array: Round } }) rounds: Round[][] = null;
+  @type("number") round: number;
+  @type("number") roundStart: number;
+  @type("number") roundDuration: number = 60 * 1000;
+  @type({ array: { array: Round } }) rounds: Round[][];
   @type({ array: "string" }) playerOrder: string[];
   @type({ map: Player }) players = new MapSchema<Player>();
 }
