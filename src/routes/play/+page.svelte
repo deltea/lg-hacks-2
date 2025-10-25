@@ -17,7 +17,9 @@
   ];
 
   type GameState = "lobby" | "prompt" | "create" | "results";
+
   let { data } = $props();
+
   let gameState: GameState = $state("lobby");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
@@ -122,7 +124,7 @@
               </div>
 
               <span class="ml-auto group-hover:opacity-100 opacity-0 duration-100">
-                <button class="flex justify-center items-center rounded-full size-8 bg-neutral-800 text-fg">
+                <button class="flex justify-center items-center rounded-full size-8 bg-neutral-800 text-fg" aria-label="remove player">
                   <iconify-icon icon="material-symbols:close-small-outline" class="text-2xl"></iconify-icon>
                 </button>
               </span>
@@ -133,7 +135,7 @@
 
       <div class="flex gap-4">
         <AlertDialog.Root>
-          <AlertDialog.Trigger class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
+          <AlertDialog.Trigger class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-6 py-4 cursor-pointer flex items-center gap-3">
             <iconify-icon icon="material-symbols:group" class="text-2xl"></iconify-icon>
             <span>Invite</span>
           </AlertDialog.Trigger>
@@ -146,10 +148,10 @@
                 </span>
 
                 <div class="w-full flex gap-4 justify-center">
-                  <AlertDialog.Cancel class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-4 py-2 cursor-pointer">
+                  <AlertDialog.Cancel class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
                     Close
                   </AlertDialog.Cancel>
-                  <AlertDialog.Action class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-4 py-2 cursor-pointer">
+                  <AlertDialog.Action class="rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
                     Copy code
                   </AlertDialog.Action>
                 </div>
@@ -158,7 +160,7 @@
           </AlertDialog.Portal>
         </AlertDialog.Root>
 
-        <button onclick={() => setGameState("prompt")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
+        <button onclick={() => setGameState("prompt")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-6 py-4 cursor-pointer flex items-center gap-3">
           <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
           <span>Start game</span>
         </button>
