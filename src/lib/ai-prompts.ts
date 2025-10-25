@@ -1,4 +1,4 @@
-export const prompts = [
+const prompts = [
     // ChatGPT
     "A rainy day that suddenly becomes sunny",
     "Waking up feeling groggy but then remembering it's your birthday",
@@ -617,3 +617,18 @@ export const prompts = [
     "The tune of a cozy winter dinner",
     "What love would sound like on Valentine's Night"
 ]
+
+let unusedPrompts: string[] = [];
+
+export function generatePrompt(): string {
+    if (unusedPrompts.length === 0) {
+        unusedPrompts = [...prompts];
+    }
+    const index = Math.random() * unusedPrompts.length;
+    if (index === unusedPrompts.length - 1) {
+        return unusedPrompts.pop()!;
+    }
+    const prompt = unusedPrompts[index];
+    unusedPrompts[index] = unusedPrompts.pop()!;
+    return prompt;
+}
