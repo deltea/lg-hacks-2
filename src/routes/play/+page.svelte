@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import { Howl } from "howler";
   import { generatePrompt } from "$lib/ai-prompts";
+  import Title from "$lib/components/Title.svelte";
 
   const songLength = 32;
   const songRange = 14;
@@ -15,8 +16,8 @@
     // { name: "Guitar", path: "/instruments/guitar.wav", color: "#ffcb4d" },
   ];
 
-  type State = "lobby" | "prompt" | "create";
-  let gameState: State = $state("lobby");
+  type GameState = "lobby" | "prompt" | "create" | "results";
+  let gameState: GameState = $state("lobby");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
@@ -32,19 +33,36 @@
   let promptInput = $state("");
   let isPlaying = $state(false);
   let currentPlayTime = $state(0);
-  let bpm = 120;
+  let tempo = $state(120);
+  let interval: NodeJS.Timeout;
 
   function setNote(row: number, col: number) {
     song[currentInstrument][col][row] = fillState;
     if (fillState) {
       const id = sounds[currentInstrument].play();
-      sounds[currentInstrument].rate(2 - col / songRange, id);
+      sounds[currentInstrument].rate((1.059 ** 2) ** (7 - col), id);
     }
   }
 
   function togglePlay() {
     isPlaying = !isPlaying;
     currentPlayTime = 0;
+
+    if (interval) clearInterval(interval);
+    interval = setInterval(() => {
+      if (isPlaying) {
+        currentPlayTime = (currentPlayTime + 1) % songLength;
+        for (let i = 0; i < instruments.length; i++) {
+          for (let j = 0; j < song[i].length; j++) {
+            const row = song[i][j];
+            if (row[currentPlayTime]) {
+              const id = sounds[i].play();
+              sounds[i].rate(2 - j / songRange, id);
+            }
+          }
+        }
+      }
+    }, 60000 / tempo / 4);
   }
 
   function changeInstrument(instrument: number) {
@@ -56,14 +74,8 @@
     setNote(x, y);
   }
 
-  function nextState() {
-    if (gameState == "lobby") {
-      gameState = "prompt";
-    } else if (gameState == "prompt") {
-      gameState = "create";
-    } else if (gameState == "create") {
-      gameState = "prompt";
-    }
+  function setGameState(newState: GameState) {
+    gameState = newState;
   }
 
   onMount(() => {
@@ -84,21 +96,6 @@
       }
     });
 
-    setInterval(() => {
-      if (isPlaying) {
-        currentPlayTime = (currentPlayTime + 1) % songLength;
-        for (let i = 0; i < instruments.length; i++) {
-          for (let j = 0; j < song[i].length; j++) {
-            const row = song[i][j];
-            if (row[currentPlayTime]) {
-              const id = sounds[i].play();
-              sounds[i].rate(2 - j / songRange, id);
-            }
-          }
-        }
-      }
-    }, 60000 / bpm / 4);
-
     return () => {
       sounds.forEach(sound => sound.unload());
       song = [];
@@ -108,9 +105,9 @@
 
 <div class="flex flex-col justify-center items-center h-full gap-4">
   {#if gameState == "lobby"}
-    <div class="flex flex-col border-2 border-fg p-8 w-[60rem] rounded-xl">
-      <form action="lobby" class="flex flex-col items-center h-full justify-between gap-12">
-        <h1>WHATEVER THE NAME IS</h1>
+    <div class="flex flex-col border-4 border-fg p-8 w-[80rem] rounded-xl">
+      <form class="flex flex-col items-center h-full justify-between gap-12">
+        <Title />
 
         <div class="w-1/2 h-[24rem] overflow-auto rounded-xl flex flex-col items-center gap-2 p-4">
           {#each players as player, i}
@@ -126,23 +123,24 @@
 
         <div class="flex gap-4">
           <AlertDialog.Root>
-            <AlertDialog.Trigger class="border-2 border-fg font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
+            <AlertDialog.Trigger class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
               <iconify-icon icon="material-symbols:group" class="text-2xl"></iconify-icon>
-              <span>invite</span>
+              <span>Invite</span>
             </AlertDialog.Trigger>
             <AlertDialog.Portal>
               <AlertDialog.Overlay class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80">
-                <AlertDialog.Content class="border-2 border-fg p-4 rounded-2xl bg-bg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 outline-hidden fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-[40rem] flex flex-col items-center gap-6">
-                  <h2 class="font-bold text-xl underline underline-offset-2">JOIN CODE</h2>
-                  <span class="rounded-xl border-2 border-fg px-4 p-2 text-4xl font-bold">
+                <AlertDialog.Content class="border-4 border-fg p-4 rounded-2xl bg-bg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 outline-hidden fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-[40rem] flex flex-col items-center gap-6">
+                  <h2 class="font-bold text-xl">JOIN CODE</h2>
+                  <span class="rounded-xl border-4 border-neutral-800 px-4 p-2 text-4xl font-bold">
                     ABIEJG
                   </span>
+
                   <div class="w-full flex gap-4 justify-center">
-                    <AlertDialog.Cancel class="rounded-xl border-2 w-1/2 border-fg px-4 py-2">
-                      close
+                    <AlertDialog.Cancel class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-4 py-2 cursor-pointer">
+                      Close
                     </AlertDialog.Cancel>
-                    <AlertDialog.Action class="rounded-xl border-2 w-1/2 border-fg px-4 py-2">
-                      copy code
+                    <AlertDialog.Action class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-4 py-2 cursor-pointer">
+                      Copy code
                     </AlertDialog.Action>
                   </div>
                 </AlertDialog.Content>
@@ -150,15 +148,15 @@
             </AlertDialog.Portal>
           </AlertDialog.Root>
 
-          <button onclick={nextState} class="border-2 border-fg font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
+          <button onclick={() => setGameState("prompt")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
             <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
-            <span>start game</span>
+            <span>Start game</span>
           </button>
         </div>
       </form>
     </div>
   {:else if gameState == "prompt"}
-    <div class="w-[60rem] rounded-2xl border-2 border-fg p-8 flex flex-col items-center gap-12">
+    <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col items-center gap-12">
       <iconify-icon icon="material-symbols:draw-outline" class="text-[12rem]"></iconify-icon>
 
       <div class="flex flex-col items-center -mt-4">
@@ -171,15 +169,14 @@
           bind:value={promptInput}
           type="text"
           placeholder="a sinister type beat"
-          class="w-[32rem] h-full mb-4 px-4 rounded-xl border-2 border-fg bg-bg text-fg focus:outline-none focus:border-accent"
+          class="w-[32rem] h-full mb-4 px-4 rounded-xl bg-neutral-800 focus:outline-none focus:border-accent"
         />
 
-        <button onclick={() => (promptInput = generatePrompt())} class="border-2 border-fg font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2 hover:bg-fg hover:text-bg">
-          <!-- <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon> -->
+        <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center">
           <span>✨</span>
         </button>
 
-        <button onclick={nextState} class="border-2 border-fg font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2 hover:bg-fg hover:text-bg">
+        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
           <span>done</span>
         </button>
@@ -204,7 +201,18 @@
           </button>
         </div>
 
-        <div></div>
+        <div class="flex items-center gap-3">
+          <label for="tempo" class="font-bold">Tempo</label>
+          <input
+            bind:value={tempo}
+            type="number"
+            name="tempo"
+            id="tempo"
+            min={60}
+            max={300}
+            class="p-2 rounded-xl border-2 border-fg "
+          />
+        </div>
       </div>
 
       <div class="w-full border-2 rounded-2xl border-fg h-[40rem] flex">
@@ -212,7 +220,7 @@
           <h3 class="font-bold mb-4">TRACKS</h3>
           <div class="flex flex-col gap-2">
             {#each instruments as instrument, i}
-              <button onclick={() => changeInstrument(i)} class="rounded-xl w-full bg-neutral-800 min-h-12 flex px-4 items-center gap-2 cursor-pointer hover:scale-105 duration-100 active:scale-100">
+              <button onclick={() => changeInstrument(i)} class="rounded-xl w-full min-h-12 flex px-4 items-center gap-2 cursor-pointer hover:scale-105 duration-100 active:scale-100 {i === currentInstrument ? 'bg-fg text-bg' : 'bg-neutral-900'}">
                 <span>{instrument.name}</span>
               </button>
             {/each}
@@ -239,6 +247,10 @@
           {/each}
         </div>
       </div>
+    </div>
+  {:else if gameState == "results"}
+    <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col gap-8">
+
     </div>
   {/if}
 </div>

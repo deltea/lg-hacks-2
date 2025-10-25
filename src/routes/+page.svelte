@@ -1,11 +1,11 @@
 <script lang="ts">
-
+  import Title from "$lib/components/Title.svelte";
 </script>
 
 <div class="flex flex-col justify-center items-center h-full gap-4">
   <div class="flex flex-col border-2 border-fg p-8 w-[60rem] rounded-xl">
     <form action="lobby" class="flex flex-col items-center h-full justify-between gap-12">
-      <h1>WHATEVER THE NAME IS</h1>
+      <Title />
 
       <input
         type="text"
