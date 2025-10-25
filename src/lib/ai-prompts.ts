@@ -106,7 +106,7 @@ const prompts = [
     "You pressed a mysterious red button",
     "Everything is going according to plan… or is it?",
     "End credits roll on a goofy adventure",
-    
+
     // gemini
     "A slow, creeping doubt",
     "Sudden realization!",
@@ -624,11 +624,12 @@ export function generatePrompt(): string {
     if (unusedPrompts.length === 0) {
         unusedPrompts = [...prompts];
     }
-    const index = Math.random() * unusedPrompts.length;
+    const index = Math.floor(Math.random() * unusedPrompts.length);
     if (index === unusedPrompts.length - 1) {
         return unusedPrompts.pop()!;
     }
     const prompt = unusedPrompts[index];
     unusedPrompts[index] = unusedPrompts.pop()!;
+    console.log(unusedPrompts);
     return prompt;
 }

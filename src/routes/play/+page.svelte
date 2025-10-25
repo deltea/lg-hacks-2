@@ -1,17 +1,18 @@
 <script lang="ts">
   import { AlertDialog } from "bits-ui";
   import { onMount } from "svelte";
+  import { Howl } from "howler";
+  import { generatePrompt } from "$lib/ai-prompts";
 
   const songLength = 32;
   const songRange = 14;
-  const colors = ["#008fb6", "#a41357", "#cf6200", "#ffcb4d", "#6ce9c4", "#ee6284"];
   const instruments = [
-    "Piano",
-    "Drums",
-    "Bass",
-    "Guitar",
-    "Synth",
-    "Strings"
+    { name: "Piano", path: "/instruments/piano.wav", color: "#008fb6" },
+    { name: "Kick", path: "/instruments/kick.wav", color: "#a41357" },
+    { name: "Snare", path: "/instruments/snare.wav", color: "#cf6200" },
+    { name: "Synth", path: "/instruments/synth.wav", color: "#6ce9c4" },
+    { name: "Cowbell", path: "/instruments/cowbell.wav", color: "#ee6284" }
+    // { name: "Guitar", path: "/instruments/guitar.wav", color: "#ffcb4d" },
   ];
 
   type State = "lobby" | "prompt" | "create";
@@ -27,9 +28,23 @@
     "flksdjflsdkjfdksl",
     "lksfdjflksdj"
   ]);
+  let sounds: Howl[] = [];
+  let promptInput = $state("");
+  let isPlaying = $state(false);
+  let currentPlayTime = $state(0);
+  let bpm = 120;
 
   function setNote(row: number, col: number) {
     song[currentInstrument][col][row] = fillState;
+    if (fillState) {
+      const id = sounds[currentInstrument].play();
+      sounds[currentInstrument].rate(2 - col / songRange, id);
+    }
+  }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    currentPlayTime = 0;
   }
 
   function changeInstrument(instrument: number) {
@@ -52,7 +67,42 @@
   }
 
   onMount(() => {
-    song = Array(instruments.length).fill(0).map(() => Array(songLength).fill(0).map(() => Array(songRange).fill(false)));
+    song = Array(instruments.length).fill(0).map(() => Array(songRange).fill(0).map(() => Array(songLength).fill(false)));
+
+    for (let i = 0; i < instruments.length; i++) {
+      const instrument = instruments[i];
+      sounds[i] = new Howl({
+        src: [instrument.path],
+        volume: 0.5
+      });
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === " ") {
+        e.preventDefault();
+        togglePlay();
+      }
+    });
+
+    setInterval(() => {
+      if (isPlaying) {
+        currentPlayTime = (currentPlayTime + 1) % songLength;
+        for (let i = 0; i < instruments.length; i++) {
+          for (let j = 0; j < song[i].length; j++) {
+            const row = song[i][j];
+            if (row[currentPlayTime]) {
+              const id = sounds[i].play();
+              sounds[i].rate(2 - j / songRange, id);
+            }
+          }
+        }
+      }
+    }, 60000 / bpm / 4);
+
+    return () => {
+      sounds.forEach(sound => sound.unload());
+      song = [];
+    };
   });
 </script>
 
@@ -118,10 +168,16 @@
 
       <form class="flex gap-4 h-12">
         <input
+          bind:value={promptInput}
           type="text"
           placeholder="a sinister type beat"
-          class="w-[24rem] h-full mb-4 px-4 rounded-xl border-2 border-fg bg-bg text-fg focus:outline-none focus:border-accent"
+          class="w-[32rem] h-full mb-4 px-4 rounded-xl border-2 border-fg bg-bg text-fg focus:outline-none focus:border-accent"
         />
+
+        <button onclick={() => (promptInput = generatePrompt())} class="border-2 border-fg font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2 hover:bg-fg hover:text-bg">
+          <!-- <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon> -->
+          <span>✨</span>
+        </button>
 
         <button onclick={nextState} class="border-2 border-fg font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2 hover:bg-fg hover:text-bg">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
@@ -130,12 +186,25 @@
       </form>
     </div>
   {:else if gameState == "create"}
-    <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col items-center gap-8">
-      <div class="flex flex-col items-center">
-        <h2 class="font-bold">CREATE A BEAT!</h2>
-        <h3>
-          <i>"a sinister type beat"</i>
-        </h3>
+    <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col gap-8">
+      <div class="flex justify-between items-center">
+        <div class="flex flex-col">
+          <h2 class="font-bold">CREATE A BEAT!</h2>
+          <h3>
+            <i>"a sinister type beat"</i>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <button onclick={togglePlay} aria-label="play/pause">
+            <iconify-icon
+              icon={isPlaying ? "material-symbols:stop-circle" : "material-symbols:play-circle"}
+              class="text-5xl cursor-pointer"
+            ></iconify-icon>
+          </button>
+        </div>
+
+        <div></div>
       </div>
 
       <div class="w-full border-2 rounded-2xl border-fg h-[40rem] flex">
@@ -144,13 +213,18 @@
           <div class="flex flex-col gap-2">
             {#each instruments as instrument, i}
               <button onclick={() => changeInstrument(i)} class="rounded-xl w-full bg-neutral-800 min-h-12 flex px-4 items-center gap-2 cursor-pointer hover:scale-105 duration-100 active:scale-100">
-                <span>{instrument}</span>
+                <span>{instrument.name}</span>
               </button>
             {/each}
           </div>
         </div>
 
         <div class="grow border-l-2 border-fg relative overflow-x-auto grid grid-cols-32 grid-rows-14 rounded-r-2xl">
+          <div
+            class="bg-fg h-full w-1 absolute top-0 {isPlaying ? "block" : "hidden"}"
+            style:left={`${(currentPlayTime / songLength) * 100}%`}
+          ></div>
+
           {#each song[currentInstrument] as col, y}
             {#each col as item, x}
               <!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -158,7 +232,7 @@
                 onmousedown={e => e.buttons & 1 && cellClicked(x, y)}
                 onmouseenter={e => e.buttons & 1 && setNote(x, y)}
                 class="border w-full h-full {item ? 'border-transparent' : 'bg-bg hover:bg-neutral-800 border-neutral-800'}"
-                style:background-color={item ? colors[currentInstrument] : "transparent"}
+                style:background-color={item ? instruments[currentInstrument].color : "transparent"}
                 aria-label="add note"
               ></button>
             {/each}
