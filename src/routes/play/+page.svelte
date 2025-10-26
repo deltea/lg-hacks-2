@@ -4,6 +4,7 @@
   import { Howl } from "howler";
   import { generatePrompt } from "$lib/ai-prompts";
   import Title from "$lib/components/Title.svelte";
+    import { copyToClipboard } from "$lib/utils.js";
 
   const songLength = 32;
   const songRange = 14;
@@ -165,7 +166,10 @@
                   <AlertDialog.Cancel class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
                     Close
                   </AlertDialog.Cancel>
-                  <AlertDialog.Action class="rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
+                  <AlertDialog.Action
+                    onclick={() => copyToClipboard("ABIEJG")}
+                    class="rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer"
+                  >
                     Copy code
                   </AlertDialog.Action>
                 </div>
