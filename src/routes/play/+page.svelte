@@ -9,6 +9,7 @@
 
   const songLength = 32;
   const songRange = 14;
+  const roundDuration = 20 * 1000;
   const instruments = [
     { name: "Piano", path: "/instruments/piano.wav", color: "#008fb6" },
     { name: "Kick", path: "/instruments/kick.wav", color: "#a41357" },
@@ -27,12 +28,11 @@
   let currentInstrument = $state(0);
   let fillState = true;
   let players = $state([
-    "flksdjflsdkjfdksl",
-    "flskjflsdjfklsj",
-    "flksdjflsdkjfdksl",
-    "flskjflsdjfklsj",
-    "flksdjflsdkjfdksl",
-    "lksfdjflksdj"
+    "leo",
+    "mary",
+    "leonardo",
+    "jonathan",
+    "lucas",
   ]);
   let sounds: Howl[] = [];
   let promptInput = $state("");
@@ -40,6 +40,7 @@
   let currentPlayTime = $state(0);
   let tempo = $state(120);
   let interval: NodeJS.Timeout;
+  let currentGameTime = $state(0);
 
   function setNote(row: number, col: number) {
     song[currentInstrument][col][row] = fillState;
@@ -100,6 +101,15 @@
 
   function setGameState(newState: GameState) {
     gameState = newState;
+    if (gameState == "create") {
+      setInterval(() => {
+        currentGameTime += 1;
+        if (currentGameTime >= roundDuration) {
+          stopSong();
+          setGameState("results");
+        }
+      }, 1);
+    }
   }
 
   onMount(() => {
@@ -169,12 +179,12 @@
                 </span>
 
                 <div class="w-full flex gap-4 justify-center">
-                  <AlertDialog.Cancel class="rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
+                  <AlertDialog.Cancel class="font-bold rounded-xl w-1/2 bg-neutral-800 duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer">
                     Close
                   </AlertDialog.Cancel>
                   <AlertDialog.Action
                     onclick={copyJoinCode}
-                    class="rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer"
+                    class="font-bold rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer"
                   >
                     Copy code
                   </AlertDialog.Action>
@@ -227,7 +237,7 @@
     <div class="flex justify-between items-center w-full">
       <div
         class="w-full bg-fg h-2 absolute top-0 left-0 -z-10"
-        style:width={`${(2 / 3) * 100}%`}
+        style:width={`${(currentGameTime / roundDuration) * 100}%`}
       ></div>
 
       <div class="flex items-center gap-4">
@@ -242,7 +252,7 @@
       <div class="flex flex-col items-center">
         <h2 class="font-bold">CREATE A BEAT!</h2>
         <h3>
-          <i>"a sinister type beat"</i>
+          <i>"The soundtrack to a dream about flying"</i>
         </h3>
       </div>
 
@@ -331,7 +341,10 @@
     <div class="w-[45rem] flex h-full overflow-auto pt-8">
       <!-- prompts -->
       <div class="flex flex-col h-full w-1/2 gap-[10rem]">
-        {#each ["osdkjlskdjflksjdlkjfskld", "ldskjflksdjflksjdflksjdlkfj", "lksjdflksdjflksdjlfkjdjsl", "slkdjflskdjfldsjljdslfjklj"] as prompt}
+        {#each ["A rainy day that suddenly becomes sunny",
+    "Waking up feeling groggy but then remembering it's your birthday",
+    "The feeling you get when you finish homework",
+    "Panic turning into relief"] as prompt}
           <div class="rounded-full px-6 py-4 bg-neutral-800 text-fg">
             {prompt}
           </div>
