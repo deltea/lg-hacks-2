@@ -20,7 +20,7 @@
 
   let { data } = $props();
 
-  let gameState: GameState = $state("results");
+  let gameState: GameState = $state("lobby");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
