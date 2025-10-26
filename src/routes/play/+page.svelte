@@ -20,7 +20,7 @@
 
   let { data } = $props();
 
-  let gameState: GameState = $state("guess");
+  let gameState: GameState = $state("lobby");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
@@ -63,6 +63,10 @@
         }
       }
     }, 60000 / tempo / 4);
+  }
+
+  function submitSong() {
+    // submit the song here
   }
 
   function stopSong() {
@@ -239,12 +243,16 @@
     <div class="w-full border-4 rounded-2xl border-fg grow flex">
       <div class="flex flex-col overflow-auto w-[16rem] border-r-2 border-fg p-4">
         <h3 class="font-bold mb-4">TRACKS</h3>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 relative grow">
           {#each instruments as instrument, i}
             <button onclick={() => changeInstrument(i)} class="rounded-xl w-full min-h-12 flex px-4 items-center gap-2 cursor-pointer hover:scale-105 duration-100 active:scale-100 {i === currentInstrument ? 'bg-fg text-bg' : 'bg-neutral-900'}">
               <span>{instrument.name}</span>
             </button>
           {/each}
+
+          <button onclick={submitSong} class="font-bold absolute bottom-0 left-0 w-full py-4 bg-fg text-bg rounded-xl cursor-pointer hover:scale-105 active:scale-100 duration-100">
+            Submit
+          </button>
         </div>
       </div>
 
