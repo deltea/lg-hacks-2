@@ -209,7 +209,12 @@
       </form>
     </div>
   {:else if gameState == "create"}
-    <div class="flex justify-between items-center w-full relative">
+    <div class="flex justify-between items-center w-full">
+      <div
+        class="w-full bg-fg h-2 absolute top-0 left-0 -z-10"
+        style:width={`${(2 / 3) * 100}%`}
+      ></div>
+
       <div class="flex items-center gap-4">
         <button onclick={togglePlay} aria-label="play/pause">
           <iconify-icon
