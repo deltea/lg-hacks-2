@@ -16,11 +16,11 @@
     // { name: "Guitar", path: "/instruments/guitar.wav", color: "#ffcb4d" },
   ];
 
-  type GameState = "lobby" | "prompt" | "create" | "results";
+  type GameState = "lobby" | "prompt" | "create" | "results" | "guess";
 
   let { data } = $props();
 
-  let gameState: GameState = $state("lobby");
+  let gameState: GameState = $state("guess");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
@@ -47,10 +47,7 @@
     }
   }
 
-  function togglePlay() {
-    isPlaying = !isPlaying;
-    currentPlayTime = 0;
-
+  function playSong(song: boolean[][][], tempo: number) {
     if (interval) clearInterval(interval);
     interval = setInterval(() => {
       if (isPlaying) {
@@ -66,6 +63,19 @@
         }
       }
     }, 60000 / tempo / 4);
+  }
+
+  function stopSong() {
+    isPlaying = false;
+    currentPlayTime = 0;
+    clearInterval(interval);
+  }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    currentPlayTime = 0;
+
+    playSong(song, tempo);
   }
 
   function changeInstrument(instrument: number) {
@@ -257,6 +267,34 @@
           {/each}
         {/each}
       </div>
+    </div>
+  {:else if gameState == "guess"}
+    <div class="flex flex-col items-center h-full justify-evenly">
+      <div class="flex flex-col items-center gap-8">
+        <iconify-icon icon="material-symbols:question-mark" class="text-[12rem]"></iconify-icon>
+        <div class="flex flex-col items-center -mt-4">
+          <h2 class="font-bold">GUESS THE PROMPT!</h2>
+          <h3>Based on the beat, guess what the original prompt was</h3>
+        </div>
+      </div>
+
+      <form class="flex gap-2 h-12">
+        <div class="bg-neutral-800 w-[32rem] rounded-xl pl-4 flex items-center">
+          <input
+            bind:value={promptInput}
+            type="text"
+            placeholder="a sinister type beat"
+            class="w-full h-full outline-none"
+          />
+
+          <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center text-xl">✨</button>
+        </div>
+
+        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
+          <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
+          <span>Done</span>
+        </button>
+      </form>
     </div>
   {:else if gameState == "results"}
     <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col gap-8">
