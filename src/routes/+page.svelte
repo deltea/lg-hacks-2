@@ -9,23 +9,26 @@
   let joinCode = $state("");
 
   onMount(() => {
+    description = generateDescription();
+
     setInterval(() => {
       description = generateDescription();
     }, 2000);
   });
 </script>
 
-<form class="flex flex-col items-center h-full justify-center gap-12">
-  <Title />
-
-  <h2 class="italics text-neutral-500 typewriter">
-    "{description}"
-  </h2>
+<form class="flex flex-col items-center h-full justify-center gap-16">
+  <div class="flex flex-col items-center gap-4">
+    <Title />
+    <h2 class="italics text-neutral-500">
+      "{description}"
+    </h2>
+  </div>
 
   <input
     type="text"
     placeholder="Username"
-    bind:value={username}
+    minlength={3}
     class="w-[24rem] h-12 mb-4 px-4 rounded-xl bg-neutral-800 focus:outline-none focus:border-accent"
   />
 

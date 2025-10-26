@@ -20,7 +20,7 @@
 
   let { data } = $props();
 
-  let gameState: GameState = $state("guess");
+  let gameState: GameState = $state("results");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
@@ -318,8 +318,30 @@
       </form>
     </div>
   {:else if gameState == "results"}
-    <div class="w-[80rem] rounded-2xl border-2 border-fg p-8 flex flex-col gap-8">
+    <div class="w-[45rem] flex h-full overflow-auto pt-8">
+      <!-- prompts -->
+      <div class="flex flex-col h-full w-1/2 gap-[10rem]">
+        {#each ["osdkjlskdjflksjdlkjfskld", "ldskjflksdjflksjdflksjdlkfj", "lksjdflksdjflksdjlfkjdjsl", "slkdjflskdjfldsjljdslfjklj"] as prompt}
+          <div class="rounded-full px-6 py-4 bg-neutral-800 text-fg">
+            {prompt}
+          </div>
+        {/each}
+      </div>
 
+      <!-- songs -->
+      <div class="flex flex-col h-full w-1/2 gap-[10rem] mt-[5rem]">
+        {#each ["osdkjlskdjflksjdlkjfskld", "ldskjflksdjflksjdflksjdlkfj", "lksjdflksdjflksdjlfkjdjsl", "slkdjflskdjfldsjljdslfjklj"] as prompt}
+          <button class="rounded-full px-6 py-4 bg-fg text-bg font-bold flex items-center gap-2 cursor-pointer">
+            <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
+            <span>PLAY SONG</span>
+          </button>
+        {/each}
+      </div>
     </div>
+
+    <a href="/" class="bg-fg font-bold w-[45rem] justify-center text-bg rounded-xl px-6 py-4 cursor-pointer flex items-center gap-2 hover:scale-[102%] active:scale-100 duration-100">
+      <iconify-icon icon="material-symbols:home" class="text-xl"></iconify-icon>
+      <span>Home</span>
+    </a>
   {/if}
 </div>
