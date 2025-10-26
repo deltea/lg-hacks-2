@@ -2,6 +2,7 @@
   import { AlertDialog } from "bits-ui";
   import { onMount } from "svelte";
   import { Howl } from "howler";
+  import { Client } from "colyseus.js";
   import { generatePrompt } from "$lib/ai-prompts";
   import Title from "$lib/components/Title.svelte";
 
@@ -17,19 +18,11 @@
   ];
 
   type GameState = "lobby" | "prompt" | "create" | "results";
-  let { data } = $props();
-  let gameState: GameState = $state("lobby");
+  const { data } = $props();
+  
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
-  let players = $state([
-    "flksdjflsdkjfdksl",
-    "flskjflsdjfklsj",
-    "flksdjflsdkjfdksl",
-    "flskjflsdjfklsj",
-    "flksdjflsdkjfdksl",
-    "lksfdjflksdj"
-  ]);
   let sounds: Howl[] = [];
   let promptInput = $state("");
   let isPlaying = $state(false);
@@ -75,8 +68,8 @@
     setNote(x, y);
   }
 
-  function setGameState(newState: GameState) {
-    gameState = newState;
+  function submit(round: number, data: any) {
+    room.send("submit", data);
   }
 
   onMount(() => {
@@ -102,6 +95,31 @@
       song = [];
     };
   });
+
+  function startGame() {
+    room.send("startGame", {});
+  }
+
+  let myId = $state("");
+  let room;
+  let players: Map<string, {isHost: boolean, username: string}> = $state(new Map());
+  let gameState: "lobby" | "game" | "results" = $state("lobby");
+  let round = $state(0);
+  const client = new Client("ws://localhost:2567");
+  (async () => {
+    if (data.isHosting) {
+      room = await client.create("room", {username: data.username});
+    } else {
+      room = await client.joinById(data.roomId);
+    }
+    myId = room.sessionId;
+    room.onStateChange((state) => {
+      console.log("the room state has been updated:", state);
+      players = state.players;
+      gameState = state.state;
+      round = state.round;
+    });
+  })();
 </script>
 
 <div class="flex flex-col justify-center items-center h-full gap-4">
@@ -112,13 +130,13 @@
       <div class="flex flex-col items-center gap-2 border-4 border-neutral-800 px-4 pt-4 rounded-2xl">
         <h2 class="font-bold">PARTY</h2>
         <div class="w-[24rem] h-[24rem] overflow-auto rounded-xl flex flex-col gap-2 px-4">
-          {#each players as player, i}
+          {#each players as [playerId, { isHost, username }]}
             <span class="rounded-xl w-full bg-neutral-900 min-h-16 flex px-4 items-center gap-2 hover:scale-105 duration-100 group">
               <div class="flex items-center gap-2">
-                {#if i === 0}
+                {#if isHost}
                   <iconify-icon icon="material-symbols:crown" class="text-2xl"></iconify-icon>
                 {/if}
-                <span>{player}</span>
+                <span>{username}</span>
               </div>
 
               <span class="ml-auto group-hover:opacity-100 opacity-0 duration-100">
@@ -158,13 +176,13 @@
           </AlertDialog.Portal>
         </AlertDialog.Root>
 
-        <button onclick={() => setGameState("prompt")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
+        <button onclick={() => startGame()} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl px-4 py-2 cursor-pointer flex items-center gap-3">
           <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
           <span>Start game</span>
         </button>
       </div>
     </form>
-  {:else if gameState == "prompt"}
+  {:else if gameState == "game" && round === 0}
     <div class="flex flex-col items-center h-full justify-evenly">
       <div class="flex flex-col items-center gap-8">
         <iconify-icon icon="material-symbols:draw-outline" class="text-[12rem]"></iconify-icon>
@@ -184,13 +202,13 @@
         <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center">
           <span>✨</span>
         </button>
-        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
+        <button onclick={() => submit(0, { content: promptInput })} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
           <span>done</span>
         </button>
       </form>
     </div>
-  {:else if gameState == "create"}
+  {:else if gameState === "game" && round % 2 === 1}
     <div class="flex justify-between items-center w-full">
       <div class="flex items-center gap-4">
         <button onclick={togglePlay} aria-label="play/pause">

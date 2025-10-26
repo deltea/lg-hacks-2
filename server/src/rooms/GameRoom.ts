@@ -55,6 +55,7 @@ export class GameRoom extends Room<RoomState> {
       if (this.state.state !== 'lobby') return;
       const order = this.state.playerOrder.indexOf(client.sessionId);
       if (order === -1) return;
+      data.sessionId = client.player;
       this.state.rounds[(order + round) % this.state.playerOrder.length][round] = 
         round % 2 ? new Song(data) : new Prompt(data); 
     });
