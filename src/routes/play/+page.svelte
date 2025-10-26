@@ -4,7 +4,8 @@
   import { Howl } from "howler";
   import { generatePrompt } from "$lib/ai-prompts";
   import Title from "$lib/components/Title.svelte";
-    import { copyToClipboard } from "$lib/utils.js";
+  import { copyToClipboard } from "$lib/utils.js";
+  import toast from "svelte-french-toast";
 
   const songLength = 32;
   const songRange = 14;
@@ -81,6 +82,11 @@
     currentPlayTime = 0;
 
     playSong(song, tempo);
+  }
+
+  function copyJoinCode() {
+    copyToClipboard("ABIEJG");
+    toast.success("Code copied!");
   }
 
   function changeInstrument(instrument: number) {
@@ -167,7 +173,7 @@
                     Close
                   </AlertDialog.Cancel>
                   <AlertDialog.Action
-                    onclick={() => copyToClipboard("ABIEJG")}
+                    onclick={copyJoinCode}
                     class="rounded-xl w-1/2 bg-fg text-bg duration-100 hover:scale-105 active:scale-100 px-6 py-4 cursor-pointer"
                   >
                     Copy code

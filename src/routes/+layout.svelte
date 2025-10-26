@@ -3,6 +3,7 @@
 	import favicon from "$lib/assets/favicon.svg";
 	import { onNavigate } from '$app/navigation';
 	import "iconify-icon";
+  import { Toaster } from "svelte-french-toast";
 
 	let { children } = $props();
 
@@ -27,3 +28,5 @@
 		{@render children?.()}
 	</div>
 </main>
+
+<Toaster />
