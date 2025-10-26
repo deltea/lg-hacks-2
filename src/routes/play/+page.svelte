@@ -20,7 +20,7 @@
 
   let { data } = $props();
 
-  let gameState: GameState = $state("lobby");
+  let gameState: GameState = $state("guess");
   let song: boolean[][][] = $state([]);
   let currentInstrument = $state(0);
   let fillState = true;
@@ -57,7 +57,7 @@
             const row = song[i][j];
             if (row[currentPlayTime]) {
               const id = sounds[i].play();
-              sounds[i].rate(2 - j / songRange, id);
+              sounds[i].rate((1.059 ** 2) ** (7 - j), id);
             }
           }
         }
@@ -186,7 +186,7 @@
         <iconify-icon icon="material-symbols:draw-outline" class="text-[12rem]"></iconify-icon>
         <div class="flex flex-col items-center -mt-4">
           <h2 class="font-bold">WRITE A PROMPT!</h2>
-          <h3>Describe a beat the next player will make</h3>
+          <h3>Describe the beat the next player will make</h3>
         </div>
       </div>
 
@@ -199,10 +199,15 @@
             class="w-full h-full outline-none"
           />
 
-          <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center text-xl">✨</button>
+          <button
+            onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center text-xl"
+            aria-label="generate prompt"
+          >
+            <iconify-icon icon="mingcute:sparkles-fill" class="text-2xl"></iconify-icon>
+          </button>
         </div>
 
-        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
+        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-6 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
           <span>Done</span>
         </button>
@@ -216,7 +221,7 @@
       ></div>
 
       <div class="flex items-center gap-4">
-        <button onclick={togglePlay} aria-label="play/pause">
+        <button onclick={togglePlay} class="hover:scale-110 active:scale-100 duration-100" aria-label="play/pause">
           <iconify-icon
             icon={isPlaying ? "material-symbols:stop-circle" : "material-symbols:play-circle"}
             class="text-5xl cursor-pointer"
@@ -273,7 +278,7 @@
             <button
               onmousedown={e => e.buttons & 1 && cellClicked(x, y)}
               onmouseenter={e => e.buttons & 1 && setNote(x, y)}
-              class="border w-full h-full {item ? 'border-transparent' : 'bg-bg hover:bg-neutral-800 border-neutral-800'}"
+              class="outline-none border w-full h-full {item ? 'border-transparent' : 'bg-bg hover:bg-neutral-800 border-neutral-800'}"
               style:background-color={item ? instruments[currentInstrument].color : "transparent"}
               aria-label="add note"
             ></button>
@@ -291,6 +296,11 @@
         </div>
       </div>
 
+      <button class="border-2 border-fg font-bold rounded-xl px-6 py-4 cursor-pointer flex items-center gap-2 hover:scale-105 active:scale-100 duration-100">
+        <iconify-icon icon="material-symbols:play-arrow" class="text-2xl"></iconify-icon>
+        <span>Play Beat</span>
+      </button>
+
       <form class="flex gap-2 h-12">
         <div class="bg-neutral-800 w-[32rem] rounded-xl pl-4 flex items-center">
           <input
@@ -299,11 +309,9 @@
             placeholder="a sinister type beat"
             class="w-full h-full outline-none"
           />
-
-          <button onclick={() => (promptInput = generatePrompt())} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center text-xl">✨</button>
         </div>
 
-        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-4 flex items-center gap-2">
+        <button onclick={() => setGameState("create")} class="bg-neutral-800 duration-100 hover:scale-105 active:scale-100 font-bold rounded-xl h-full cursor-pointer px-6 flex items-center gap-2">
           <iconify-icon icon="material-symbols:check" class="text-2xl"></iconify-icon>
           <span>Done</span>
         </button>
